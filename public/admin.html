@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Puzzle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0B2E1A, #1D5233);
+            --primary: #30D16B;
+            --primary-hover: #4DFF90;
+            --accent: #00F0FF;
+            --danger: #ef4444;
+            --text-main: #FFFFFF;
+            --text-muted: #D1D5DB;
+            --board-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            background: var(--board-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        .alert-msg {
+            font-weight: 600;
+            margin-bottom: 15px;
+            min-height: 24px;
+        }
+
+        .success {
+            color: var(--accent);
+        }
+
+        .error {
+            color: var(--danger);
+        }
+
+        .back-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Toggle Switch UI */
+        .toggle-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-status {
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .status-on { background: rgba(48, 209, 107, 0.2); color: #30D16B; }
+        .status-off { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Section -->
+    <div class="admin-container" id="login-section">
+        <h1>🔒 Admin Login</h1>
+        <p>Masukkan password untuk mengakses panel admin.</p>
+
+        <div class="form-group">
+            <input type="password" id="admin-password" placeholder="Password Admin" required>
+        </div>
+
+        <button id="login-btn">Login</button>
+        <p id="login-message" class="alert-msg"></p>
+        <a href="/" class="back-link">← Kembali ke Game</a>
+    </div>
+
+    <!-- Admin Panel Section -->
+    <div class="admin-container hidden" id="admin-section">
+        <h1>🔧 Admin Panel</h1>
+        <p>Atur link reward untuk pemain yang berhasil menyelesaikan puzzle.</p>
+
+        <div class="form-group">
+            <label for="reward-link">Link Reward Saat Ini:</label>
+            <input type="url" id="reward-link" placeholder="Memuat link..." required>
+        </div>
+
+        <button id="save-btn">Simpan Link Reward</button>
+        <p id="message" class="alert-msg"></p>
+
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--glass-border);">
+
+        <!-- Game Toggle Section -->
+        <div class="toggle-section">
+            <div style="text-align: left;">
+                <h3 style="font-size: 1.1rem; color: #fff;">Status Game</h3>
+                <span id="game-status-text" class="toggle-status status-on">ONLINE</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="game-toggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <a href="/" class="back-link">← Ke Game</a>
+            <a href="/cctv" class="back-link" style="color: var(--accent);">Buka CCTV Live →</a>
+        </div>
+    </div>
+
+    <script>
+        const loginSection = document.getElementById('login-section');
+        const adminSection = document.getElementById('admin-section');
+
+        const pwdInput = document.getElementById('admin-password');
+        const loginBtn = document.getElementById('login-btn');
+        const loginMessage = document.getElementById('login-message');
+
+        const linkInput = document.getElementById('reward-link');
+        const saveBtn = document.getElementById('save-btn');
+        const messageEl = document.getElementById('message');
+
+        const gameToggle = document.getElementById('game-toggle');
+        const gameStatusText = document.getElementById('game-status-text');
+
+        let currentPassword = '';
+
+        loginBtn.addEventListener('click', () => {
+            const pwd = pwdInput.value;
+            if (!pwd) return;
+
+            loginBtn.textContent = 'Memeriksa...';
+            loginBtn.disabled = true;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pwd })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        currentPassword = pwd;
+                        loginSection.classList.add('hidden');
+                        adminSection.classList.remove('hidden');
+                        loadRewardLink();
+                        loadGameStatus();
+                    } else {
+                        showMsg(loginMessage, data.message || 'Password salah!', 'error');
+                    }
+                })
+                .catch(() => showMsg(loginMessage, 'Error sistem', 'error'))
+                .finally(() => {
+                    loginBtn.textContent = 'Login';
+                    loginBtn.disabled = false;
+                });
+        });
+
+        // Also allow Enter key for login
+        pwdInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+
+        function loadRewardLink() {
+            fetch('/api/reward', {
+                headers: { 'x-admin-password': currentPassword }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.link) {
+                        linkInput.value = data.link;
+                    } else if (data.message) {
+                        showMsg(messageEl, data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    showMsg(messageEl, 'Gagal memuat link', 'error');
+                });
+        }
+
+        saveBtn.addEventListener('click', () => {
+            const newLink = linkInput.value.trim();
+            if (!newLink) {
+                showMsg(messageEl, 'Link tidak boleh kosong!', 'error');
+                return;
+            }
+
+            saveBtn.textContent = 'Menyimpan...';
+            saveBtn.disabled = true;
+
+            fetch('/api/reward', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ link: newLink, password: currentPassword })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showMsg(messageEl, data.message, 'success');
+                    } else {
+                        showMsg(messageEl, data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    showMsg(messageEl, 'Terjadi kesalahan saat menyimpan.', 'error');
+                })
+                .finally(() => {
+                    saveBtn.textContent = 'Simpan Link Reward';
+                    saveBtn.disabled = false;
+                });
+        });
+
+        // Game Toggle Logic
+        function loadGameStatus() {
+            fetch('/api/config')
+                .then(res => res.json())
+                .then(data => {
+                    gameToggle.checked = data.gameEnabled;
+                    updateStatusUI(data.gameEnabled);
+                });
+        }
+
+        gameToggle.addEventListener('change', () => {
+            const isEnabled = gameToggle.checked;
+            updateStatusUI(isEnabled);
+
+            fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: currentPassword, enabled: isEnabled })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    gameToggle.checked = !isEnabled;
+                    updateStatusUI(!isEnabled);
+                    alert('Gagal mengubah status game!');
+                }
+            });
+        });
+
+        function updateStatusUI(enabled) {
+            if (enabled) {
+                gameStatusText.textContent = 'ONLINE';
+                gameStatusText.className = 'toggle-status status-on';
+            } else {
+                gameStatusText.textContent = 'OFFLINE';
+                gameStatusText.className = 'toggle-status status-off';
+            }
+        }
+
+        function showMsg(el, text, type) {
+            el.textContent = text;
+            el.className = `alert-msg ${type}`;
+            setTimeout(() => {
+                el.textContent = '';
+                el.className = 'alert-msg';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

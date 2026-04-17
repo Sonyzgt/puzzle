@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4x4 Sliding Puzzle Reward!</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Pixelify+Sans:wght@700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>THR KU</h1>
+            <p>Selesaikan puzzle ini untuk mendapatkan <strong>REWARD</strong>!</p>
+        </header>
+
+        <div id="welcome-screen" style="width: 100%;">
+            <div class="player-input-box">
+                <label for="player-name">Masukkan Nama Anda untuk Bermain:</label>
+                <input type="text" id="player-name" placeholder="Contoh: Budi" maxlength="30">
+                <button id="start-btn" style="margin-top: 15px; width: 100%;">Mulai Game</button>
+            </div>
+        </div>
+
+        <div class="game-board-container" style="display: none;">
+            <div id="game-board"></div>
+        </div>
+
+        <div class="game-info" style="display: none; text-align: center; margin-bottom: 15px; flex-direction: column; align-items: center; gap: 10px;">
+            <p id="moves-label">Langkah: 0</p>
+            <button id="hint-btn" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 5px 15px; font-size: 0.9rem;">Lihat Petunjuk (Hint)</button>
+        </div>
+
+        <div id="winner-notif" class="winner-notif hidden"></div>
+
+        <div id="win-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Selamat! 🎉</h2>
+                <p>Kamu berhasil menyelesaikan puzzle dalam <span id="final-moves"></span> langkah!</p>
+                <p>Membuka link reward dalam <span id="countdown">3</span> detik...</p>
+                <button id="claim-btn">Buka Sekarang</button>
+            </div>
+        </div>
+
+        <!-- Hint Modal -->
+        <div id="hint-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 350px;">
+                <h3 style="margin-bottom: 15px;">Gambar Target</h3>
+                <img src="puzzle-image.png" alt="Target Puzzle" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                <button id="close-hint-btn" style="margin-top: 20px; width: 100%;">Kembali Bermain</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Closed Overlay -->
+    <div id="game-closed-overlay" class="modal hidden" style="z-index: 2000;">
+        <div class="modal-content">
+            <h1 style="font-family: 'Pixelify Sans', sans-serif; color: var(--danger); font-size: 2.5rem;">GAME DITUTUP</h1>
+            <p style="margin: 20px 0; font-size: 1.1rem;">Maaf, Admin telah menutup akses game untuk sementara. Silakan tunggu informasi selanjutnya.</p>
+            <button onclick="location.reload()" style="background: #444;">Refresh Halaman</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

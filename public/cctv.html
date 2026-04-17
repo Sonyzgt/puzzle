@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live CCTV - Puzzle Monitoring</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0B2E1A, #1D5233);
+            --primary: #30D16B;
+            --accent: #00FF66;
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+            --tile-bg: linear-gradient(135deg, #30D16B, #4DFF90);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        h1 {
+            font-family: 'Pixelify Sans', sans-serif;
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .status-badge {
+            background: rgba(0, 255, 102, 0.1);
+            color: var(--accent);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .cctv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .cctv-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            transition: transform 0.2s;
+        }
+
+        .cctv-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .cctv-card h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-main);
+        }
+
+        .cctv-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            width: 120px;
+            height: 120px;
+            background: #222;
+            border-radius: 4px;
+            margin: 0 auto;
+        }
+
+        .cctv-tile {
+            background-image: url('puzzle-image.png');
+            background-size: 400% 400%;
+            border-radius: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: transparent;
+        }
+
+        .cctv-tile.empty {
+            background: #111;
+        }
+
+        .cctv-stats {
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Login Modal Override */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: #111;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: #222;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+
+<body>
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-box">
+            <h1 style="margin-bottom: 10px;">🔒 CCTV ACCESS</h1>
+            <p style="color: #666;">Masukkan password untuk melihat monitor.</p>
+            <input type="password" id="admin-password" placeholder="Password Admin">
+            <button id="login-btn">MASUK MONITOR</button>
+        </div>
+    </div>
+
+    <header>
+        <h1>📺 LIVE MONITOR</h1>
+        <div class="status-badge">STREAMS ACTIVE</div>
+    </header>
+
+    <div class="cctv-grid" id="cctv-grid">
+        <!-- Players will be injected here -->
+    </div>
+
+    <script>
+        let currentPassword = '';
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginBtn = document.getElementById('login-btn');
+        const pwdInput = document.getElementById('admin-password');
+        const grid = document.getElementById('cctv-grid');
+
+        loginBtn.addEventListener('click', () => {
+            const pwd = pwdInput.value;
+            if (!pwd) return;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pwd })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    currentPassword = pwd;
+                    loginOverlay.classList.add('hidden');
+                    startMonitoring();
+                } else {
+                    alert('Password salah!');
+                }
+            });
+        });
+
+        pwdInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') loginBtn.click(); });
+
+        function startMonitoring() {
+            // Initial load of all active players
+            updateCCTV();
+
+            // Setup SSE for real-time updates (Push) <!-- id: sse_client_setup -->
+            const eventSource = new EventSource(`/api/admin/sse?password=${encodeURIComponent(currentPassword)}`);
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'update') {
+                    updatePlayerInUI(data);
+                } else if (data.type === 'remove') {
+                    removePlayerFromUI(data.name);
+                }
+            };
+
+            eventSource.onerror = (err) => {
+                console.error("SSE connection error:", err);
+                eventSource.close();
+                // Retry after 5s if connection lost
+                setTimeout(startMonitoring, 5000);
+            };
+
+            // Keep periodic full update every 10s as a fallback <!-- id: sse_fallback -->
+            setInterval(updateCCTV, 10000);
+        }
+
+        async function updateCCTV() {
+            try {
+                const res = await fetch('/api/admin/players', {
+                    headers: { 'x-admin-password': currentPassword }
+                });
+                const data = await res.json();
+                if (data.success && data.players) {
+                    renderAllCCTV(data.players);
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
+        }
+
+        // Shared player map to keep track of current states in the UI <!-- id: sse_ui_state -->
+        let activePlayersState = {};
+
+        function renderAllCCTV(players) {
+            activePlayersState = players;
+            refreshUI();
+        }
+
+        function updatePlayerInUI(player) {
+            activePlayersState[player.name] = player;
+            refreshUI();
+        }
+
+        function removePlayerFromUI(name) {
+            if (activePlayersState[name]) {
+                delete activePlayersState[name];
+                refreshUI();
+            }
+        }
+
+        function refreshUI() {
+            const names = Object.keys(activePlayersState);
+            if (names.length === 0) {
+                grid.innerHTML = '<p style="color: #444; text-align: center; grid-column: 1/-1;">Tidak ada pemain aktif.</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            names.forEach(name => {
+                const p = activePlayersState[name];
+                // Only show if active within last 60s
+                if (Date.now() - (p.lastUpdate || Date.now()) > 60000) return;
+
+                const card = document.createElement('div');
+                card.className = 'cctv-card';
+
+                const board = document.createElement('div');
+                board.className = 'cctv-board';
+
+                p.tiles.forEach(val => {
+                    const tile = document.createElement('div');
+                    if (val === 0) {
+                        tile.className = 'cctv-tile empty';
+                    } else {
+                        tile.className = 'cctv-tile';
+                        const SIZE = 4;
+                        const targetPos = val - 1;
+                        const row = Math.floor(targetPos / SIZE);
+                        const col = targetPos % SIZE;
+                        const posX = (col / (SIZE - 1)) * 100;
+                        const posY = (row / (SIZE - 1)) * 100;
+                        tile.style.backgroundPosition = `${posX}% ${posY}%`;
+                    }
+                    board.appendChild(tile);
+                });
+
+                card.innerHTML = `<h3>👤 ${name}</h3>`;
+                card.appendChild(board);
+                card.innerHTML += `<div class="cctv-stats"><span>${p.moves} moves</span> <span style="color: var(--accent);">LIVE</span></div>`;
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+
+</html>
